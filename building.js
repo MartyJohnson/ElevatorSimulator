@@ -1,7 +1,4 @@
 
-
-
-
 var events = require('events');
 var eventEmitter = new events.EventEmitter();
 
@@ -78,7 +75,7 @@ function callButtonPressed(floorId, direction)
 
 function findOptimalElevator(floorId);
 {
-
+    //do logic to find nearest idle or moving.. rank by logic to what is best
 
 }
 
@@ -116,21 +113,12 @@ function elevatorChooseFloor(elevator, floorId)
     elevator.floorsToStop.push(floorId);
 }
 
-function elevatorCloseDoors(elevator)
-{
-    elevator.openTimeRemaining  = 0;
-}
 
 function elvatorHoldDoorsOpenLonger(elevator)
 {
     elevator.openTimeRemaining  += openTimeRemaining;
 }
 
-
-function closeElevatorDoors(elevator)
-{
-
-}
 
 //move as specific elevator specified direction
 function moveElevator(elevator)
@@ -140,17 +128,29 @@ function moveElevator(elevator)
 
 }
 
+function floorDisplay (elevatorId, currentFloor)
+{
+    this.elevatorId = elevatorId;
+    this.currentFloor = currentFloor;
+}
+
 function buildingFloor(floorId, hasUpButton, hasDownButton)
 {
     this.floorId = floorId;
     this.hasUpButton = hasUpButton;
     this.hasDownButton = hasDownButton;
-    
+    this.elevatorDisplays = [];    
 }
 
 
 function createBuiding(floorCount, elevatorCount)
 {
+    //load up each elevator and initialize to bottom floor
+    for(int i = 0; i < elevatorCount; i++)
+    {
+        elevators.push(elevatorCar("Elevator " + i, 0, 1, true, false );
+    }
+
     for(int i = 1; i <= floorCount; i++)
     {
         var curFloor = buildingFloor(i+1,true, true);
@@ -166,18 +166,25 @@ function createBuiding(floorCount, elevatorCount)
             curFloor.hasUpButton = false;       
         }
 
+        foreach(var el in elevators)
+        {
+            curFloor.elevatorDisplays.push(floorDisplay(el.elevatorId, el.currentFloor));
+        }
+        
         floors.push(curFloor);
 
     }
 
-    //load up each elevator and initialize to bottom floor
-    for(int i = 0; i < elevatorCount; i++)
-    {
-        elevators.push(elevatorCar("Elevator " + i, 0, 1, true, false );
-    }
+    
 }
 
 
+
+// Bind the elevatorDoorsOpen event with the elevatorStoppedListener function
+eventEmitter.addListener('elevatorDoorsOpen', elevatorDoorsOpenListener);
+
+// Bind the elevatorDoorsClose event with the elevatorDoorsCloseListener function
+eventEmitter.addListener('elevatorDoorsClose', elevatorDoorsCloseListener);
 
 // Bind the elevatorStopped event with the elevatorStoppedListener function
 eventEmitter.addListener('elevatorStopped', elevatorStoppedListener);
@@ -189,12 +196,33 @@ eventEmitter.addListener('floorPosition', floorPositionListener);
 var elevatorStoppedListener = function elevatorStoppedListener(elevator){
     //open doors and set timer
     elevator.isOpen = true;
-    el.openTimeRemaining = openTimeDuration;
-    //start a timer here to count down the open time remaining
+    eventEmitter.emit('elevatorDoorsOpen', elevator);)
+    elevator.openTimeRemaining = openTimeDuration;
+    if (elevator.TripCount === 100)
+    {
+        //put it in maintenece mode... 
+        elevator.isInMainteneceMode = true;
+        // maybe display a message or something inside.. do not allow doors to close or anything as it should not move
 
-
+    }
+    else
+    {
+        //start a timer here to count down the open time remaining
+    }
+ 
 }
 
+//button in elevator to close its own doors
+function elevatorCloseDoors(elevator)
+{
+    elevator.openTimeRemaining  = 0;
+    //dont let it work in maintenence mode
+    if (elevator.isInMainteneceMode === false)
+    {
+        //close elevator doors
+        eventEmitter.emit('elevatorDoorsClose', elevator);)
+    }
+}
 //floorPositionListener of an Elevator
 var floorPositionListener = function floorPositionListener(elevator, floorId) {
     elevator.currentFloor = floorId;
@@ -212,8 +240,30 @@ var floorPositionListener = function floorPositionListener(elevator, floorId) {
         //keep the elevator moving
         moveElevator(elevator);
     }
+
+    //set the floor display of this elevator outside on the floor so you can see where it is
+    var thisFloor = floors[floorId-1];
+    foreach(var fDisplay in thisFloor.elevatorDisplays)
+    {
+        if (fDisplay.elevatorId === elevator.Id )
+        {
+            fdisplay.currentFloor = floorId;
+        }
+    }
+    floors[floorId-1].
  }
 
+ function timerUpSoCloseDoors(elevator)
+ {
+    //Close doors 
+    elevator.isOpen = close;
+    eventEmitter.emit('elevatorDoorsClose', elevator);)
+    //if any floors chosen... begin to move
+    if (elevator.floorsToStop.length > 0 )
+    {
+        moveElevator(elevator);
+    }
+ }
 
 
  //helper function to check array
@@ -221,7 +271,7 @@ function checkElevatorFloorArray(array, floorId)
 {        
  for(var i = 0 ; i< array.length; i++)
     {        
-       if(array[i]== 19){
+       if(array[i]== floorId){
          return true;
      }
  }
